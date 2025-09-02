@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Ninny</title>
+</head>
+<body>
+    
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Mood Tracker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #444;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      flex: 1;
+      display: flex;
+    }
+    .choice {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      color: white;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+    .happy {
+      background: pink;
+      color: #333;
+      
+    }
+    .sad {
+      background: #777;
+    }
+    .choice.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+    footer {
+      background: #eee;
+      padding: 1rem;
+      text-align: center;
+    }
+    button {
+      margin-top: 10px;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .reset-btn {
+      background: #f44336;
+      color: white;
+    }
+    .reset-btn:hover {
+      background: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>  Mood your day</h1>
+  </header>
+  <div class="container">
+    <div id="happy" class="choice happy">😊 Happy</div>
+    <div id="sad" class="choice sad">😢 Sad</div>
+  </div>
+  <footer>
+    <p id="status"></p>
+    <button class="reset-btn" onclick="resetToday()">🔄 Reset วันนี้</button>
+    <p id="summary"></p>
+  </footer>
+
+  <script>
+    const happyBtn = document.getElementById("happy");
+    const sadBtn = document.getElementById("sad");
+    const statusText = document.getElementById("status");
+    const summaryText = document.getElementById("summary");
+
+    const todayKey = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const monthKey = todayKey.slice(0,7); // YYYY-MM
+
+    function loadState() {
+      const chosen = localStorage.getItem(todayKey);
+      if (chosen) {
+        statusText.textContent = `วันนี้คุณเลือก: ${chosen === "happy" ? "😊 มีความสุข" : "😢 เศร้า"}`;
+        disableChoices();
+      } else {
+        statusText.textContent = "ยังไม่ได้เลือกอารมณ์วันนี้";
+        enableChoices();
+      }
+      updateSummary();
+    }
+
+    function disableChoices() {
+      happyBtn.classList.add("disabled");
+      sadBtn.classList.add("disabled");
+    }
+
+    function enableChoices() {
+      happyBtn.classList.remove("disabled");
+      sadBtn.classList.remove("disabled");
+    }
+
+    function chooseMood(mood) {
+      if (!localStorage.getItem(todayKey)) {
+        localStorage.setItem(todayKey, mood);
+
+        // update monthly count
+        let stats = JSON.parse(localStorage.getItem(monthKey) || '{"happy":0,"sad":0}');
+        stats[mood]++;
+        localStorage.setItem(monthKey, JSON.stringify(stats));
+
+        loadState();
+      }
+    }
+
+    function resetToday() {
+      const chosen = localStorage.getItem(todayKey);
+      if (chosen) {
+        // ลบการเลือกของวันนี้
+        localStorage.removeItem(todayKey);
+
+        // ดึงสถิติเดือนมาลดค่า
+        let stats = JSON.parse(localStorage.getItem(monthKey) || '{"happy":0,"sad":0}');
+        if (stats[chosen] > 0) stats[chosen]--;
+        localStorage.setItem(monthKey, JSON.stringify(stats));
+      }
+      loadState();
+    }
+
+    function updateSummary() {
+      let stats = JSON.parse(localStorage.getItem(monthKey) || '{"happy":0,"sad":0}');
+      summaryText.textContent = `เดือนนี้: 😊 มีความสุข ${stats.happy} วัน, 😢 เศร้า ${stats.sad} วัน`;
+    }
+
+    happyBtn.addEventListener("click", () => chooseMood("happy"));
+    sadBtn.addEventListener("click", () => chooseMood("sad"));
+
+    loadState();
+  </script>
+
+  
+
+</body>
+
+</html>
